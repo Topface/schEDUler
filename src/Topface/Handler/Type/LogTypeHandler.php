@@ -3,12 +3,13 @@
 namespace Topface\Handler\Type;
 
 use Psr\Log\LoggerInterface;
+use Scheduler\Handler\HandlerInterface;
 use Scheduler\Task\SchedulerTask;
 
 /**
  * Обработчик задачи, который просто пишет что-то в консоль
  */
-class LogTypeHandler implements LogHandlerInterface {
+class LogTypeHandler implements HandlerInterface {
     /** @var LoggerInterface  */
     private $Logger;
 

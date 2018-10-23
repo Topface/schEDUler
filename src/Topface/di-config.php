@@ -1,6 +1,5 @@
 <?php
 
-use Psr\Log\LoggerInterface;
 use Scheduler\Handler\HandlerFactoryInterface;
 use Scheduler\HandlerWorker\HandlerWorker;
 use Scheduler\HandlerWorker\HandlerWorkerInterface;
@@ -24,10 +23,6 @@ use Topface\Controller\HandleSchedullTaskControllerInterface;
 use Topface\Handler\HandlerFactory;
 use Topface\Handler\HandlerFactoryConfig;
 use Topface\Handler\HandlerFactoryConfigInterface;
-use Topface\Handler\Type\ConsoleHandlerInterface;
-use Topface\Handler\Type\ConsoleTypeHandler;
-use Topface\Handler\Type\LogHandlerInterface;
-use Topface\Handler\Type\LogTypeHandler;
 use Topface\Redis\RedisClientFactory;
 
 return [
@@ -42,7 +37,5 @@ return [
     SchedulerQueueWorkerInterface::class => DI\get(SchedulerQueueWorker::class),
     SchedulerQueueStorageInterface::class => DI\get(SchedulerQueueStorage::class),
     HandlerFactoryConfigInterface::class => DI\get(HandlerFactoryConfig::class),
-    LogHandlerInterface::class => DI\get(LogTypeHandler::class),
-    ConsoleHandlerInterface::class => DI\get(ConsoleTypeHandler::class),
     HandlerFactoryInterface::class => DI\get(HandlerFactory::class),
 ];

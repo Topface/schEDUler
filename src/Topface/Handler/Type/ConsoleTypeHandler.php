@@ -2,12 +2,13 @@
 
 namespace Topface\Handler\Type;
 
+use Scheduler\Handler\HandlerInterface;
 use Scheduler\Task\SchedulerTask;
 
 /**
  * Обработчик задачи, который просто пишет что-то в консоль
  */
-class ConsoleTypeHandler implements ConsoleHandlerInterface {
+class ConsoleTypeHandler implements HandlerInterface {
     /**
      * Обрабатываем таску и возвращаем результат выполнения
      *
