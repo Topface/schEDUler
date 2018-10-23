@@ -3,6 +3,7 @@
 namespace Scheduler\SchedulerQueueStorage;
 
 use Predis\Client;
+use Scheduler\SchedulerRedisClientFactoryInterface;
 use Scheduler\Task\SchedulerTask;
 
 class SchedulerQueueStorage implements SchedulerQueueStorageInterface {
@@ -14,12 +15,12 @@ class SchedulerQueueStorage implements SchedulerQueueStorageInterface {
     private $RedisClient;
 
     /**
-     * @param SchedulerQueueRedisClientFactoryInterface $RedisClientFactory
+     * @param SchedulerRedisClientFactoryInterface $RedisClientFactory
      */
     public function __construct(
-        SchedulerQueueRedisClientFactoryInterface $RedisClientFactory
+        SchedulerRedisClientFactoryInterface $RedisClientFactory
     ) {
-        $this->RedisClient = $RedisClientFactory->getRedisClient();
+        $this->RedisClient = $RedisClientFactory->getRedisQueueClient();
     }
 
     /**
