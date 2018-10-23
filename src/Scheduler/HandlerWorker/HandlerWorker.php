@@ -54,40 +54,43 @@ class HandlerWorker implements HandlerWorkerInterface {
      * Получаем новое задание из очереди и обрабатываем его
      */
     public function run() {
-        // достаем элемент из очереди
-        $Task = $this->SchedulerQueueStorage->pop();
+        while(true) {
+            // достаем элемент из очереди
+            $Task = $this->SchedulerQueueStorage->pop();
 
-        if ($Task) {
-            $result = $this->processTask($Task);
+            if ($Task) {
+                $result = $this->processTask($Task);
 
-            if (!$result) {
-                $this->Logger->error(
-                    sprintf(
-                        'Task #%s failed and restarted',
-                        $Task->getTaskId()
-                    )
-                );
-                $this->SchedulerQueueStorage->add($Task);
+                if (!$result) {
+                    $this->Logger->error(
+                        sprintf(
+                            'Task #%s failed and restarted',
+                            $Task->getTaskId()
+                        )
+                    );
+                    $this->SchedulerQueueStorage->add($Task);
+                }
             }
+
+            // чистим память в обработчике, чтобы не текла
+            unset($Task);
+
+            // чуть-чуть спим для приличия
+            usleep(500);
         }
-
-        // чистим память в обработчике, чтобы не текла
-        unset($Task);
-
-        // чуть-чуть спим для приличия
-        usleep(100);
-        $this->run();
     }
 
     /**
      * Получаем хэндлер для задачи и выполняем её
      *
      * @param SchedulerTask $SchedulerTask Задача, которую необходимо выполнить
+     *
+     * @return bool
      */
-    public function processTask(SchedulerTask $SchedulerTask) {
+    public function processTask(SchedulerTask $SchedulerTask): bool {
         $TaskHandler = $this->HandlerFactory->getHandler($SchedulerTask->getTypeId());
         try {
-            $TaskHandler->runTask($SchedulerTask);
+            return $TaskHandler->runTask($SchedulerTask);
         } catch (Exception $Ex) {
             $this->Logger->error(
                 sprintf(
@@ -99,5 +102,7 @@ class HandlerWorker implements HandlerWorkerInterface {
                 )
             );
         }
+
+        return false;
     }
 }
