@@ -58,18 +58,20 @@ class HandlerWorker implements HandlerWorkerInterface {
             // достаем элемент из очереди
             $Task = $this->SchedulerQueueStorage->pop();
 
-            if ($Task) {
-                $result = $this->processTask($Task);
+            if (!$Task) {
+                continue;
+            }
 
-                if (!$result) {
-                    $this->Logger->error(
-                        sprintf(
-                            'Task #%s failed and restarted',
-                            $Task->getTaskId()
-                        )
-                    );
-                    $this->SchedulerQueueStorage->add($Task);
-                }
+            $result = $this->processTask($Task);
+
+            if (!$result) {
+                $this->Logger->error(
+                    sprintf(
+                        'Task #%s failed and restarted',
+                        $Task->getTaskId()
+                    )
+                );
+                $this->SchedulerQueueStorage->add($Task);
             }
 
             // чистим память в обработчике, чтобы не текла
