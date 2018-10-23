@@ -3,11 +3,14 @@
 namespace Scheduler;
 
 use Predis\Client;
+use Scheduler\Lock\LockInterface;
 use Scheduler\Task\SchedulerTask;
 use Scheduler\Task\SchedulerTaskInterface;
 
+/**
+ * Класс расписания выполняемых задач
+ */
 class Scheduler implements SchedulerInterface {
-
     /**
      * @var Client
      */
@@ -18,6 +21,8 @@ class Scheduler implements SchedulerInterface {
     }
 
     /**
+     * Добавляем задачу в пул или устанавливаем новые данные для неё
+     *
      * @inheritdoc
      */
     public function addOrSet(SchedulerTaskInterface $Task): string {
@@ -30,6 +35,8 @@ class Scheduler implements SchedulerInterface {
     }
 
     /**
+     * Достаем таск из очереди и удаляем его оттуда
+     *
      * @inheritdoc
      */
     public function getAndRemove(int $timestamp, int $count = self::LIMIT): array {
