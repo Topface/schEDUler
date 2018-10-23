@@ -20,8 +20,11 @@ class TaskQueueHandler implements TaskQueueHandlerInterface {
         $this->TaskQueueRedisClientFactory->getRedisClient()->lpush(self::KEY, $data);
     }
 
-    public function pop(): SchedulerTaskInterface {
+    public function pop() {
         $data = $this->TaskQueueRedisClientFactory->getRedisClient()->rpop(self::KEY);
+        if ($data === null) {
+            return null;
+        }
         $array = (array) \msgpack_unpack($data);
         return new SchedulerTask(...\array_values($array));
     }

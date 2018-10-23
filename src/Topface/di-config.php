@@ -2,6 +2,8 @@
 
 use Scheduler\Scheduler;
 use Scheduler\SchedulerInterface;
+use Scheduler\SchedulerRedisClientFactory;
+use Scheduler\SchedulerRedisClientFactoryInterface;
 use Scheduler\ScheduleWorker\ScheduleWorker;
 use Scheduler\ScheduleWorker\ScheduleWorkerInterface;
 use Scheduler\Task\SchedulerTask;
@@ -11,6 +13,8 @@ use Scheduler\TaskHandler\TaskHandler2Interface;
 use Scheduler\TaskHandler\TaskHandlerFactoryInterface;
 use Scheduler\TaskQueue\TaskQueueHandler;
 use Scheduler\TaskQueue\TaskQueueHandlerInterface;
+use Scheduler\TaskQueue\TaskQueueRedisClientFactory;
+use Scheduler\TaskQueue\TaskQueueRedisClientFactoryInterface;
 use Scheduler\TaskWorker\TaskWorker;
 use Scheduler\TaskWorker\TaskWorkerInterface;
 use Topface\TaskHandler\TaskHandler1;
@@ -26,4 +30,6 @@ return [
     TaskWorkerInterface::class => DI\get(TaskWorker::class),
     ScheduleWorkerInterface::class => DI\get(ScheduleWorker::class),
     SchedulerInterface::class => DI\get(Scheduler::class),
+    TaskQueueRedisClientFactoryInterface::class => DI\get(TaskQueueRedisClientFactory::class),
+    SchedulerRedisClientFactoryInterface::class => DI\get(SchedulerRedisClientFactory::class),
 ];
