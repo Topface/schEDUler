@@ -2,20 +2,20 @@
 
 namespace Scheduler\Worker;
 
-use Scheduler\SchedulerInterface;
+use Scheduler\Handler\SchedulerHandlerFactoryInterface;
 
 class QueueWorker implements SchedulerWorkerInterface {
-    private $Scheduler;
     private $Queue;
-    public function __construct(SchedulerInterface $Scheduler, SchedulerWorkerQueueHandlerInterface $Queue) {
-        $this->Scheduler = $Scheduler;
+    private $HandlerFactory;
+    public function __construct(SchedulerWorkerQueueHandlerInterface $Queue, SchedulerHandlerFactoryInterface $HandlerFactory) {
         $this->Queue = $Queue;
+        $this->HandlerFactory = $HandlerFactory;
     }
 
     public function process() {
-        $Tasks = $this->Scheduler->getAndRemove(time());
-        foreach ($Tasks as $Task) {
-            $this->Queue->add($Task);
+        $Task = $this->Queue->pop();
+        foreach ($this->HandlerFactory->getHandlers($Task) as $Handler) {
+            $Handler->process($Task);
         }
     }
 }
