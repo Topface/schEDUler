@@ -2,7 +2,9 @@
 
 namespace Scheduler\HandlerWorker;
 
+use Exception;
 use Predis\Client;
+use Psr\Log\LoggerInterface;
 use Scheduler\Handler\HandlerFactoryInterface;
 use Scheduler\SchedulerQueueRedisClientFactoryInterface;
 use Scheduler\SchedulerQueueStorage\SchedulerQueueStorageInterface;
@@ -27,15 +29,25 @@ class HandlerWorker implements HandlerWorkerInterface {
     private $HandlerFactory;
 
     /**
+     * Логгер для записи событий
+     *
+     * @var LoggerInterface
+     */
+    private $Logger;
+
+    /**
      * @param SchedulerQueueStorageInterface $SchedulerQueueStorage
      * @param HandlerFactoryInterface        $HandlerFactory
+     * @param LoggerInterface                $Logger
      */
     public function __construct(
         SchedulerQueueStorageInterface $SchedulerQueueStorage,
-        HandlerFactoryInterface $HandlerFactory
+        HandlerFactoryInterface $HandlerFactory,
+        LoggerInterface $Logger
     ) {
         $this->SchedulerQueueStorage = $SchedulerQueueStorage;
         $this->HandlerFactory = $HandlerFactory;
+        $this->Logger = $Logger;
     }
 
     /**
@@ -49,6 +61,12 @@ class HandlerWorker implements HandlerWorkerInterface {
             $result = $this->processTask($Task);
 
             if (!$result) {
+                $this->Logger->error(
+                    sprintf(
+                        'Task #%s failed and restarted',
+                        $Task->getTaskId()
+                    )
+                );
                 $this->SchedulerQueueStorage->add($Task);
             }
         }
@@ -68,6 +86,18 @@ class HandlerWorker implements HandlerWorkerInterface {
      */
     public function processTask(SchedulerTask $SchedulerTask) {
         $TaskHandler = $this->HandlerFactory->getHandler($SchedulerTask->getTypeId());
-        $TaskHandler->runTask($SchedulerTask);
+        try {
+            $TaskHandler->runTask($SchedulerTask);
+        } catch (Exception $Ex) {
+            $this->Logger->error(
+                sprintf(
+                    'Task #%s handler raise an exception %s, message: %s\n%s',
+                    $SchedulerTask->getTaskId(),
+                    get_class($Ex),
+                    $Ex->getMessage(),
+                    $Ex->getTraceAsString()
+                )
+            );
+        }
     }
 }

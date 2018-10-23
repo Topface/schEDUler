@@ -2,6 +2,8 @@
 
 namespace Scheduler\SchedulerQueueWorker;
 
+use Exception;
+use Psr\Log\LoggerInterface;
 use Scheduler\SchedulerInterface;
 use Scheduler\SchedulerQueueStorage\SchedulerQueueStorage;
 use Scheduler\SchedulerQueueStorage\SchedulerQueueStorageInterface;
@@ -22,15 +24,23 @@ class SchedulerQueueWorker implements SchedulerQueueWorkerInterface {
     private $SchedulerQueueStorage;
 
     /**
+     * @var LoggerInterface
+     */
+    private $Logger;
+
+    /**
      * @param SchedulerQueueStorageInterface $SchedulerQueueStorage
      * @param SchedulerInterface             $Scheduler
+     * @param LoggerInterface                $Logger
      */
     public function __construct(
         SchedulerQueueStorageInterface $SchedulerQueueStorage,
-        SchedulerInterface $Scheduler
+        SchedulerInterface $Scheduler,
+        LoggerInterface $Logger
     ) {
         $this->Scheduler = $Scheduler;
         $this->SchedulerQueueStorage = $SchedulerQueueStorage;
+        $this->Logger = $Logger;
     }
 
     /**
@@ -46,7 +56,11 @@ class SchedulerQueueWorker implements SchedulerQueueWorkerInterface {
          * @var SchedulerTask $Task
          */
         foreach($tasks as $taskId => $Task) {
-            $this->SchedulerQueueStorage->add($Task);
+            try {
+                $this->SchedulerQueueStorage->add($Task);
+            } catch (Exception $Ex) {
+                $this->Logger->error($Ex);
+            }
         }
     }
 }
