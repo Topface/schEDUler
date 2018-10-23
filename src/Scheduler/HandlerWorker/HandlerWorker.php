@@ -50,10 +50,18 @@ class HandlerWorker implements HandlerWorkerInterface {
 
         // обрабатываем его, если он есть
         if ($taskData) {
-            $array = (array) \msgpack_unpack($taskData);
-            $Task = new SchedulerTask(...\array_values($array));
+            $taskDataUnpacked = (array) \msgpack_unpack($taskData);
+            $Task = new SchedulerTask(...\array_values($taskDataUnpacked));
 
-            $this->processTask($Task);
+            $result = $this->processTask($Task);
+
+            // если таска выполнилась не очень хорошо, вносим её обратно в очередь хэндлеров
+            if (!$result) {
+                //todo log here
+                $this->lock();
+                $this->RedisClient->sadd($queueKey, [$taskData]);
+                $this->unlock();
+            }
         }
 
         // чистим память в обработчике, чтобы не текла
