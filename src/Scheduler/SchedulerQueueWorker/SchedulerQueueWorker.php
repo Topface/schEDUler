@@ -2,9 +2,12 @@
 
 namespace Scheduler\SchedulerQueueWorker;
 
-use Predis\Client;
+use Exception;
+use Psr\Log\LoggerInterface;
 use Scheduler\SchedulerInterface;
-use Scheduler\SchedulerQueueRedisClientFactoryInterface;
+use Scheduler\SchedulerQueueStorage\SchedulerQueueStorage;
+use Scheduler\SchedulerQueueStorage\SchedulerQueueStorageInterface;
+use Scheduler\Task\SchedulerTask;
 
 /**
  * Обрабатываем запланированные события и публикуем их в очередь
@@ -16,20 +19,28 @@ class SchedulerQueueWorker implements SchedulerQueueWorkerInterface {
     private $Scheduler;
 
     /**
-     * @var Client
+     * @var SchedulerQueueStorage
      */
-    private $RedisClient;
+    private $SchedulerQueueStorage;
 
     /**
-     * @param SchedulerInterface                   $Scheduler
-     * @param SchedulerQueueRedisClientFactoryInterface $RedisClientFactory
+     * @var LoggerInterface
+     */
+    private $Logger;
+
+    /**
+     * @param SchedulerQueueStorageInterface $SchedulerQueueStorage
+     * @param SchedulerInterface             $Scheduler
+     * @param LoggerInterface                $Logger
      */
     public function __construct(
+        SchedulerQueueStorageInterface $SchedulerQueueStorage,
         SchedulerInterface $Scheduler,
-        SchedulerQueueRedisClientFactoryInterface $RedisClientFactory
+        LoggerInterface $Logger
     ) {
         $this->Scheduler = $Scheduler;
-        $this->RedisClient = $RedisClientFactory->getRedisClient();
+        $this->SchedulerQueueStorage = $SchedulerQueueStorage;
+        $this->Logger = $Logger;
     }
 
     /**
@@ -40,57 +51,16 @@ class SchedulerQueueWorker implements SchedulerQueueWorkerInterface {
         $currentTime = time();
         $tasks = $this->Scheduler->getAndRemove($currentTime);
 
-
-        // публикуем таски в очередь обработчиков
-        $this->lock();
-
-        $handlerQueueKey = $this->getQueueKey();
+        /**
+         * @var int $taskId
+         * @var SchedulerTask $Task
+         */
         foreach($tasks as $taskId => $Task) {
-            $taskData = \msgpack_pack($Task->toArray());
-
-            $this->RedisClient->sadd($handlerQueueKey, [$taskData]);
+            try {
+                $this->SchedulerQueueStorage->add($Task);
+            } catch (Exception $Ex) {
+                $this->Logger->error($Ex);
+            }
         }
-
-        $this->unlock();
-    }
-
-    /**
-     * Установка блокировки
-     *
-     * @return bool
-     */
-    private function lock(): bool {
-        $Key = $this->getLockKey();
-        if ($this->RedisClient->setnx($Key, 1)) {
-            $this->RedisClient->expire($Key, 10);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Снятие блокировки
-     */
-    private function unlock() {
-        $Key = $this->getLockKey();
-        $this->RedisClient->del([$Key]);
-    }
-
-    /**
-     * Возвращает ключ для лока
-     *
-     * @return string
-     */
-    private function getLockKey(): string {
-        return 'handler_queue_lock';
-    }
-
-    /**
-     * Возвращает ключ для очереди обработчиков
-     *
-     * @return string
-     */
-    private function getQueueKey(): string {
-        return 'handler_queue';
     }
 }

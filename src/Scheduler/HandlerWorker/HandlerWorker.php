@@ -2,9 +2,12 @@
 
 namespace Scheduler\HandlerWorker;
 
+use Exception;
 use Predis\Client;
+use Psr\Log\LoggerInterface;
 use Scheduler\Handler\HandlerFactoryInterface;
 use Scheduler\SchedulerQueueRedisClientFactoryInterface;
+use Scheduler\SchedulerQueueStorage\SchedulerQueueStorageInterface;
 use Scheduler\Task\SchedulerTask;
 
 /**
@@ -12,11 +15,11 @@ use Scheduler\Task\SchedulerTask;
  */
 class HandlerWorker implements HandlerWorkerInterface {
     /**
-     * Клиент соединения с очередью тасков
+     * Сторейдж доступа к очереди тасков на выполнение
      *
-     * @var Client
+     * @var SchedulerQueueStorageInterface
      */
-    private $RedisClient;
+    private $SchedulerQueueStorage;
 
     /**
      * Фабрика обработчиков типов тасков
@@ -26,46 +29,50 @@ class HandlerWorker implements HandlerWorkerInterface {
     private $HandlerFactory;
 
     /**
-     * @param SchedulerQueueRedisClientFactoryInterface $RedisClientFactory
-     * @param HandlerFactoryInterface                   $HandlerFactory
+     * Логгер для записи событий
+     *
+     * @var LoggerInterface
+     */
+    private $Logger;
+
+    /**
+     * @param SchedulerQueueStorageInterface $SchedulerQueueStorage
+     * @param HandlerFactoryInterface        $HandlerFactory
+     * @param LoggerInterface                $Logger
      */
     public function __construct(
-        SchedulerQueueRedisClientFactoryInterface $RedisClientFactory,
-        HandlerFactoryInterface $HandlerFactory
+        SchedulerQueueStorageInterface $SchedulerQueueStorage,
+        HandlerFactoryInterface $HandlerFactory,
+        LoggerInterface $Logger
     ) {
-        $this->RedisClient = $RedisClientFactory->getRedisClient();
+        $this->SchedulerQueueStorage = $SchedulerQueueStorage;
         $this->HandlerFactory = $HandlerFactory;
+        $this->Logger = $Logger;
     }
 
     /**
      * Получаем новое задание из очереди и обрабатываем его
      */
     public function run() {
-        $queueKey = $this->getQueueKey();
-
         // достаем элемент из очереди
-        $this->lock();
-        $taskData = $this->RedisClient->spop($queueKey);
-        $this->unlock();
+        $Task = $this->SchedulerQueueStorage->pop();
 
-        // обрабатываем его, если он есть
-        if ($taskData) {
-            $taskDataUnpacked = (array) \msgpack_unpack($taskData);
-            $Task = new SchedulerTask(...\array_values($taskDataUnpacked));
-
+        if ($Task) {
             $result = $this->processTask($Task);
 
-            // если таска выполнилась не очень хорошо, вносим её обратно в очередь хэндлеров
             if (!$result) {
-                //todo log here
-                $this->lock();
-                $this->RedisClient->sadd($queueKey, [$taskData]);
-                $this->unlock();
+                $this->Logger->error(
+                    sprintf(
+                        'Task #%s failed and restarted',
+                        $Task->getTaskId()
+                    )
+                );
+                $this->SchedulerQueueStorage->add($Task);
             }
         }
 
         // чистим память в обработчике, чтобы не текла
-        unset($taskData, $Task);
+        unset($Task);
 
         // чуть-чуть спим для приличия
         usleep(100);
@@ -79,46 +86,18 @@ class HandlerWorker implements HandlerWorkerInterface {
      */
     public function processTask(SchedulerTask $SchedulerTask) {
         $TaskHandler = $this->HandlerFactory->getHandler($SchedulerTask->getTypeId());
-        $TaskHandler->runTask($SchedulerTask);
-    }
-
-    /**
-     * Установка блокировки
-     *
-     * @return bool
-     */
-    private function lock(): bool {
-        $Key = $this->getLockKey();
-        if ($this->RedisClient->setnx($Key, 1)) {
-            $this->RedisClient->expire($Key, 10);
-            return true;
+        try {
+            $TaskHandler->runTask($SchedulerTask);
+        } catch (Exception $Ex) {
+            $this->Logger->error(
+                sprintf(
+                    'Task #%s handler raise an exception %s, message: %s\n%s',
+                    $SchedulerTask->getTaskId(),
+                    get_class($Ex),
+                    $Ex->getMessage(),
+                    $Ex->getTraceAsString()
+                )
+            );
         }
-        return false;
-    }
-
-    /**
-     * Снятие блокировки
-     */
-    private function unlock() {
-        $Key = $this->getLockKey();
-        $this->RedisClient->del([$Key]);
-    }
-
-    /**
-     * Возвращает ключ для лока
-     *
-     * @return string
-     */
-    private function getLockKey(): string {
-        return 'handler_queue_lock';
-    }
-
-    /**
-     * Возвращает ключ для очереди обработчиков
-     *
-     * @return string
-     */
-    private function getQueueKey(): string {
-        return 'handler_queue';
     }
 }
