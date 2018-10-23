@@ -3,7 +3,6 @@
 namespace Scheduler;
 
 use Predis\Client;
-use Scheduler\Lock\LockInterface;
 use Scheduler\Task\SchedulerTask;
 use Scheduler\Task\SchedulerTaskInterface;
 
