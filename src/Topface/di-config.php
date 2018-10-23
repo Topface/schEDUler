@@ -20,6 +20,12 @@ use Topface\Controller\GetSchedullTaskController;
 use Topface\Controller\GetSchedullTaskControllerInterface;
 use Topface\Controller\HandleSchedullTaskController;
 use Topface\Controller\HandleSchedullTaskControllerInterface;
+use Topface\Handler\HandlerFactoryConfig;
+use Topface\Handler\HandlerFactoryConfigInterface;
+use Topface\Handler\Type\ConsoleHandlerInterface;
+use Topface\Handler\Type\ConsoleTypeHandler;
+use Topface\Handler\Type\LogHandlerInterface;
+use Topface\Handler\Type\LogTypeHandler;
 use Topface\Redis\RedisClientFactory;
 
 return [
@@ -33,5 +39,7 @@ return [
     SchedulerRedisClientFactoryInterface::class => DI\get(RedisClientFactory::class),
     SchedulerQueueWorkerInterface::class => DI\get(SchedulerQueueWorker::class),
     SchedulerQueueStorageInterface::class => DI\get(SchedulerQueueStorage::class),
-    LoggerInterface::class => DI\get(\Monolog\Logger::class),
+    HandlerFactoryConfigInterface::class => DI\get(HandlerFactoryConfig::class),
+    LogHandlerInterface::class => DI\get(LogTypeHandler::class),
+    ConsoleHandlerInterface::class => DI\get(ConsoleTypeHandler::class)
 ];

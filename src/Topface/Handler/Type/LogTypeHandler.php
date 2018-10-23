@@ -2,12 +2,25 @@
 
 namespace Topface\Handler\Type;
 
+use Psr\Log\LoggerInterface;
 use Scheduler\Task\SchedulerTask;
 
 /**
  * Обработчик задачи, который просто пишет что-то в консоль
  */
-class ConsoleTypeHandler implements ConsoleHandlerInterface {
+class LogTypeHandler implements LogHandlerInterface {
+    /** @var LoggerInterface  */
+    private $Logger;
+
+    /**
+     * @param LoggerInterface $Logger
+     */
+    public function __construct(
+        LoggerInterface $Logger
+    ) {
+        $this->Logger = $Logger;
+    }
+
     /**
      * Обрабатываем таску и возвращаем результат выполнения
      *
@@ -16,11 +29,13 @@ class ConsoleTypeHandler implements ConsoleHandlerInterface {
      * @return bool
      */
     public function runTask(SchedulerTask $SchedulerTask): bool {
-        echo sprintf(
+        $message = sprintf(
             'Task[#%s] context: %s',
             $SchedulerTask->getTaskId(),
             implode(',', $SchedulerTask->getContext())
         );
+
+        $this->Logger->notice($message);
 
         return true;
     }

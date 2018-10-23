@@ -3,6 +3,8 @@
 namespace Scheduler\Task;
 
 class SchedulerTask implements SchedulerTaskInterface {
+    const CONSOLE_TASK = 1;
+    const LOG_TASK = 2;
 
     /**
      * @var int
