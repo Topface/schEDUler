@@ -48,7 +48,7 @@ class SchedulerQueueWorker implements SchedulerQueueWorkerInterface {
         foreach($tasks as $taskId => $Task) {
             $taskData = \msgpack_pack($Task->toArray());
 
-            $this->RedisClient->sadd($handlerQueueKey, $taskData);
+            $this->RedisClient->sadd($handlerQueueKey, [$taskData]);
         }
 
         $this->unlock();
