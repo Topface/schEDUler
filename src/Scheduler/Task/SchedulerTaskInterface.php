@@ -7,6 +7,9 @@ namespace Scheduler\Task;
  */
 interface SchedulerTaskInterface {
 
+    const TYPE_TEST_1 = 1;
+    const TYPE_TEST_2 = 2;
+
     /**
      * Возвращает время запуска скрипта
      *
