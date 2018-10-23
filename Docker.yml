@@ -1,0 +1,18 @@
+version: '2'
+services:
+  dev:
+    volumes:
+    - ".:/var/www/topface/master"
+    image: hub.core.tf/topface-ci:1.4
+    networks:
+    - backend
+    restart: on-failure
+  redis:
+    image: redis:alpine
+    ports:
+    - "6379"
+    networks:
+    - backend
+    restart: on-failure
+networks:
+  backend:
