@@ -27,11 +27,4 @@ interface SchedulerQueueStorageInterface {
      * @return string
      */
     public function getQueueKey(): string;
-
-    /**
-     * Определяет ключ лока для доступа к очереди
-     *
-     * @return string
-     */
-    public function getLockKey(): string;
 }

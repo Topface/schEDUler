@@ -29,12 +29,8 @@ class SchedulerQueueStorage implements SchedulerQueueStorageInterface {
      * @param SchedulerTask $SchedulerTask
      */
     public function add(SchedulerTask $SchedulerTask) {
-        $this->lock();
-
         $taskData = \msgpack_pack($SchedulerTask->toArray());
         $this->RedisClient->sadd($this->getQueueKey(), [$taskData]);
-
-        $this->unlock();
     }
 
     /**
@@ -43,9 +39,7 @@ class SchedulerQueueStorage implements SchedulerQueueStorageInterface {
      * @return SchedulerTask|null
      */
     public function pop() {
-        $this->lock();
         $taskData = $this->RedisClient->spop($this->getQueueKey());
-        $this->unlock();
 
         if (!$taskData) {
             return null;
@@ -53,37 +47,6 @@ class SchedulerQueueStorage implements SchedulerQueueStorageInterface {
 
         $taskDataUnpacked = (array) \msgpack_unpack($taskData);
         return new SchedulerTask(...\array_values($taskDataUnpacked));
-    }
-
-    /**
-     * Установка блокировки
-     *
-     * @return bool
-     */
-    private function lock(): bool {
-        $Key = $this->getLockKey();
-        if ($this->RedisClient->setnx($Key, 1)) {
-            $this->RedisClient->expire($Key, 10);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Снятие блокировки
-     */
-    private function unlock() {
-        $Key = $this->getLockKey();
-        $this->RedisClient->del([$Key]);
-    }
-
-    /**
-     * Возвращает ключ для лока
-     *
-     * @return string
-     */
-    public function getLockKey(): string {
-        return 'handler_queue_lock';
     }
 
     /**
