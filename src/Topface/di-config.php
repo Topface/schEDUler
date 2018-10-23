@@ -1,10 +1,12 @@
 <?php
 
+use Psr\Log\LoggerInterface;
 use Scheduler\HandlerWorker\HandlerWorker;
 use Scheduler\HandlerWorker\HandlerWorkerInterface;
 use Scheduler\Scheduler;
 use Scheduler\SchedulerInterface;
-use Scheduler\SchedulerQueueRedisClientFactoryInterface;
+use Scheduler\SchedulerQueueStorage\SchedulerQueueStorage;
+use Scheduler\SchedulerQueueStorage\SchedulerQueueStorageInterface;
 use Scheduler\SchedulerQueueWorker\SchedulerQueueWorker;
 use Scheduler\SchedulerQueueWorker\SchedulerQueueWorkerInterface;
 use Scheduler\SchedulerRedisClientFactoryInterface;
@@ -29,6 +31,7 @@ return [
     HandleSchedullTaskControllerInterface::class    => DI\get(HandleSchedullTaskController::class),
     ControllerFactoryInterface::class => DI\get(ControllerFactory::class),
     SchedulerRedisClientFactoryInterface::class => DI\get(RedisClientFactory::class),
-    SchedulerQueueRedisClientFactoryInterface::class => DI\get(RedisClientFactory::class),
     SchedulerQueueWorkerInterface::class => DI\get(SchedulerQueueWorker::class),
+    SchedulerQueueStorageInterface::class => DI\get(SchedulerQueueStorage::class),
+    LoggerInterface::class => DI\get(\Monolog\Logger::class),
 ];
