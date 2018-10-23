@@ -3,6 +3,7 @@
 namespace Topface\Handler;
 
 use Scheduler\Task\SchedulerTask;
+use Topface\Handler\Type\ConsoleTypeHandler;
 use Topface\Handler\Type\LogTypeHandler;
 
 /**
@@ -14,7 +15,7 @@ class HandlerFactoryConfig implements HandlerFactoryConfigInterface {
      */
     public function getHandlersConfig(): array {
         return [
-            SchedulerTask::CONSOLE_TASK => LogTypeHandler::class,
+            SchedulerTask::CONSOLE_TASK => ConsoleTypeHandler::class,
             SchedulerTask::LOG_TASK => LogTypeHandler::class,
         ];
     }
