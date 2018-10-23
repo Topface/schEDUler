@@ -2,14 +2,17 @@
 
 namespace Topface\Controller;
 
+use DI\Container;
 use Topface\Arg;
 
-/**
- * TODO Описание
- *
- * @author Ivan Lapsnekov
- * @task   TODO номер задачи
- */
 interface ControllerInterface {
+    /**
+     * @param Container $Di
+     */
+    public function __construct(Container $Di);
+
+    /**
+     * @param Arg $Arg
+     */
     public function run(Arg $Arg);
 }
