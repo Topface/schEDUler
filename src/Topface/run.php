@@ -2,7 +2,7 @@
 
 use DI\ContainerBuilder;
 use Topface\Controller\ControllerArgument;
-use Topface\Controller\RunControllerInterface;
+use Topface\Controller\ControllerFactoryInterface;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -13,8 +13,8 @@ try {
     // TODO Тут нужно получить от DI некий роутер/фронткотроллер и стартовать
 
     $ControllerArgument = new ControllerArgument($argv[2]);
-    $Controller = $Di->get(RunControllerInterface::class);
-    $Controller->setArgument($ControllerArgument);
+    $Factory = $Di->get(ControllerFactoryInterface::class);
+    $Controller = $Factory->getController($ControllerArgument);
     $Controller->start();
 
     echo PHP_EOL;

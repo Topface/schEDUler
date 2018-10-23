@@ -6,7 +6,6 @@ namespace Topface\Controller;
  * @author Andrey Mostovoy
  * @task
  */
-interface RunControllerInterface {
-    public function setArgument(ControllerArgumentInterface $Argument);
+interface ControllerInterface {
     public function start();
 }
