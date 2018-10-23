@@ -3,6 +3,8 @@
 namespace Scheduler\Task;
 
 class SchedulerTask implements SchedulerTaskInterface {
+    const WONDERFUL_TYPE = 1;
+    const SUPER_TYPE = 2;
 
     /**
      * @var int
