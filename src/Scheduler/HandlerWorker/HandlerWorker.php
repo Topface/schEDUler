@@ -3,10 +3,8 @@
 namespace Scheduler\HandlerWorker;
 
 use Exception;
-use Predis\Client;
 use Psr\Log\LoggerInterface;
 use Scheduler\Handler\HandlerFactoryInterface;
-use Scheduler\SchedulerQueueRedisClientFactoryInterface;
 use Scheduler\SchedulerQueueStorage\SchedulerQueueStorageInterface;
 use Scheduler\Task\SchedulerTask;
 
