@@ -38,7 +38,7 @@ class HandlerFactory implements HandlerFactoryInterface {
      *
      * @return HandlerInterface
      */
-    public function getHandler(\int $typeId): HandlerInterface {
+    public function getHandler(int $typeId): HandlerInterface {
         $HandlerType = $this->HandlerFactoryConfig->getHandlersConfig()[$typeId];
         if (!$HandlerType) {
             //todo log error

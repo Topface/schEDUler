@@ -23,11 +23,11 @@ class ControllerFactory implements ControllerFactoryInterface {
 
     public function getController(ControllerArgumentInterface $Argument): ControllerInterface {
         if ($Argument->isAdd()) {
-            $this->AddController->start();
+            return $this->AddController;
         } elseif ($Argument->isGet()) {
-            $this->GetController->start();
+            return $this->GetController;
         } elseif ($Argument->isHandle()) {
-            $this->HandleController->start();
+            return $this->HandleController;
         } else {
             throw new \RuntimeException('Cannot create controller');
         }

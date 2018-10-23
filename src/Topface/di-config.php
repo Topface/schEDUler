@@ -1,6 +1,7 @@
 <?php
 
 use Psr\Log\LoggerInterface;
+use Scheduler\Handler\HandlerFactoryInterface;
 use Scheduler\HandlerWorker\HandlerWorker;
 use Scheduler\HandlerWorker\HandlerWorkerInterface;
 use Scheduler\Scheduler;
@@ -20,6 +21,7 @@ use Topface\Controller\GetSchedullTaskController;
 use Topface\Controller\GetSchedullTaskControllerInterface;
 use Topface\Controller\HandleSchedullTaskController;
 use Topface\Controller\HandleSchedullTaskControllerInterface;
+use Topface\Handler\HandlerFactory;
 use Topface\Handler\HandlerFactoryConfig;
 use Topface\Handler\HandlerFactoryConfigInterface;
 use Topface\Handler\Type\ConsoleHandlerInterface;
@@ -41,5 +43,6 @@ return [
     SchedulerQueueStorageInterface::class => DI\get(SchedulerQueueStorage::class),
     HandlerFactoryConfigInterface::class => DI\get(HandlerFactoryConfig::class),
     LogHandlerInterface::class => DI\get(LogTypeHandler::class),
-    ConsoleHandlerInterface::class => DI\get(ConsoleTypeHandler::class)
+    ConsoleHandlerInterface::class => DI\get(ConsoleTypeHandler::class),
+    HandlerFactoryInterface::class => DI\get(HandlerFactory::class),
 ];

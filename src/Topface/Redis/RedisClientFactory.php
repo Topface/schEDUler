@@ -16,7 +16,9 @@ class RedisClientFactory implements SchedulerRedisClientFactoryInterface {
      * @return Client
      */
     public function getRedisClient(): Client {
-        $Client = new Client();
+        $Client = new Client([
+            'host' => 'ag-redis',
+        ]);
         return $Client;
     }
 
@@ -26,8 +28,9 @@ class RedisClientFactory implements SchedulerRedisClientFactoryInterface {
      * @return Client
      */
     public function getRedisQueueClient(): Client {
-        $Client = new Client();
-
+        $Client = new Client([
+            'host' => 'ag-redis',
+        ]);
         return $Client;
     }
 }
