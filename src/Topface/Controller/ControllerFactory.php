@@ -3,20 +3,19 @@
 namespace Topface\Controller;
 
 use DI\Container;
+use DI\DependencyException;
+use DI\NotFoundException;
 use InvalidArgumentException;
 
-/**
- * TODO Описание
- *
- * @author Ivan Lapsnekov
- * @task   TODO номер задачи
- */
 class ControllerFactory {
     /**
      * @var Container
      */
     private $Di;
 
+    /**
+     * @param Container $Di
+     */
     public function __construct(Container $Di) {
         $this->Di = $Di;
     }
@@ -25,8 +24,9 @@ class ControllerFactory {
      * @param string $name
      *
      * @return ControllerInterface
-     * @throws \DI\DependencyException
-     * @throws \DI\NotFoundException
+     *
+     * @throws DependencyException
+     * @throws NotFoundException
      */
     public function getController(string $name): ControllerInterface {
         switch ($name) {
